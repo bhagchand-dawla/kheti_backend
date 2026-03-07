@@ -1,0 +1,107 @@
+// ─── Prisma Schema for SmartKheti ──────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── User Model (Admin Auth) ──────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ─── Crop Model ───────────────────────────────────
+
+model Crop {
+  id              String   @id @default(uuid())
+  name            String
+  category        String
+  image           String?
+  description     String?  @db.Text
+  growingDuration String?  @map("growing_duration")
+  season          Season?
+  soilType        String?  @map("soil_type")
+  waterRequirement String? @map("water_requirement")
+  yield           String?
+  majorRegions    String?  @map("major_regions")
+
+  // ─── Geography ──────────────────────────────────
+  geoMajorStates     String? @map("geo_major_states") @db.Text
+  geoProductionNotes String? @map("geo_production_notes") @db.Text
+  geoRegionHighlight String? @map("geo_region_highlight") @db.Text
+
+  // ─── Soil Requirements ──────────────────────────
+  soilPhMin          Float?  @map("soil_ph_min")
+  soilPhMax          Float?  @map("soil_ph_max")
+  soilPreparation    String? @map("soil_preparation") @db.Text
+  soilTestingTips    String? @map("soil_testing_tips") @db.Text
+
+  // ─── Weather & Climate ──────────────────────────
+  weatherTempRange     String? @map("weather_temp_range")
+  weatherRainfall      String? @map("weather_rainfall")
+  weatherHumidity      String? @map("weather_humidity")
+  weatherWarningAlert  String? @map("weather_warning_alert") @db.Text
+
+  // ─── Water & Irrigation ─────────────────────────
+  irrigationMethod         String? @map("irrigation_method")
+  irrigationFrequency      String? @map("irrigation_frequency")
+  irrigationSavingTips     String? @map("irrigation_saving_tips") @db.Text
+  irrigationSmartTech      String? @map("irrigation_smart_tech")
+  irrigationSubSurface     String? @map("irrigation_sub_surface")
+
+  // ─── Seed Management ───────────────────────────
+  seedVariety   String? @map("seed_variety")
+  seedIsHybrid  Boolean? @default(false) @map("seed_is_hybrid")
+  seedRate      String?  @map("seed_rate")
+  seedTreatment String?  @map("seed_treatment") @db.Text
+
+  // ─── Disease & Pest ────────────────────────────
+  diseaseName       String? @map("disease_name")
+  diseaseSymptoms   String? @map("disease_symptoms") @db.Text
+  diseasePrevention String? @map("disease_prevention") @db.Text
+  diseaseTreatment  String? @map("disease_treatment") @db.Text
+
+  // ─── Market Insights ───────────────────────────
+  marketAvgPrice       Float?  @map("market_avg_price")
+  marketPeakSeason     String? @map("market_peak_season")
+  marketPriceTrend     String? @map("market_price_trend")
+
+  // ─── Business Analysis ─────────────────────────
+  bizSeedCost       Float? @map("biz_seed_cost")
+  bizFertilizerCost Float? @map("biz_fertilizer_cost")
+  bizLaborCost      Float? @map("biz_labor_cost")
+  bizIrrigationCost Float? @map("biz_irrigation_cost")
+  bizExpectedYield  Float? @map("biz_expected_yield")
+
+  // ─── Timestamps & Soft Delete ──────────────────
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("crops")
+}
+
+enum Season {
+  KHARIF
+  RABI
+  ZAID
+  ANNUAL
+}
