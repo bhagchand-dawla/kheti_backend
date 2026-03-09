@@ -91,12 +91,45 @@ model Crop {
   bizIrrigationCost Float? @map("biz_irrigation_cost")
   bizExpectedYield  Float? @map("biz_expected_yield")
 
+  // ─── Relations ──────────────────────────────────
+  marketPrices MarketPrice[]
+
   // ─── Timestamps & Soft Delete ──────────────────
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   @@map("crops")
+}
+
+// ─── Market Price Model ───────────────────────────
+
+model MarketPrice {
+  id            String   @id @default(uuid())
+  commodity     String                              // Crop/commodity name (e.g. "Wheat", "Rice")
+  variety       String?                             // Variety (e.g. "Desi", "FAQ")
+  market        String                              // Mandi name (e.g. "Azadpur")
+  district      String?                             // District
+  state         String                              // State (e.g. "Madhya Pradesh")
+  minPrice      Float    @map("min_price")          // Minimum price (₹/quintal)
+  maxPrice      Float    @map("max_price")          // Maximum price (₹/quintal)
+  modalPrice    Float    @map("modal_price")        // Modal/average price (₹/quintal)
+  unit          String   @default("Quintal")        // Unit of measurement
+  priceDate     DateTime @map("price_date")         // Date of the price record
+  source        String?                             // Data source (e.g. "Agmarknet", "manual")
+
+  // Optional relation to Crop
+  cropId        String?  @map("crop_id")
+  crop          Crop?    @relation(fields: [cropId], references: [id])
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([commodity])
+  @@index([state])
+  @@index([priceDate])
+  @@index([market])
+  @@map("market_prices")
 }
 
 enum Season {

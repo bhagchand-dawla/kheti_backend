@@ -126,4 +126,132 @@ const validateIdParam = (req, res, next) => {
     next();
 };
 
-export { validateCreateCrop, validateUpdateCrop, validateIdParam };
+// ─── Market Price Validators ─────────────────────
+
+/**
+ * Validates the request body for creating a market price.
+ */
+const validateCreateMarketPrice = (req, res, next) => {
+    const errors = [];
+    const body = req.body;
+
+    if (!body.commodity || typeof body.commodity !== "string" || body.commodity.trim() === "") {
+        errors.push({ field: "commodity", message: "Commodity name is required" });
+    }
+
+    if (!body.market || typeof body.market !== "string" || body.market.trim() === "") {
+        errors.push({ field: "market", message: "Market/Mandi name is required" });
+    }
+
+    if (!body.state || typeof body.state !== "string" || body.state.trim() === "") {
+        errors.push({ field: "state", message: "State is required" });
+    }
+
+    if (body.minPrice === undefined || isNaN(body.minPrice) || body.minPrice < 0) {
+        errors.push({ field: "minPrice", message: "Minimum price must be a positive number" });
+    }
+
+    if (body.maxPrice === undefined || isNaN(body.maxPrice) || body.maxPrice < 0) {
+        errors.push({ field: "maxPrice", message: "Maximum price must be a positive number" });
+    }
+
+    if (body.modalPrice === undefined || isNaN(body.modalPrice) || body.modalPrice < 0) {
+        errors.push({ field: "modalPrice", message: "Modal price must be a positive number" });
+    }
+
+    if (!body.priceDate) {
+        errors.push({ field: "priceDate", message: "Price date is required" });
+    } else if (isNaN(new Date(body.priceDate).getTime())) {
+        errors.push({ field: "priceDate", message: "Price date must be a valid date" });
+    }
+
+    // Cross-field validation
+    if (body.minPrice !== undefined && body.maxPrice !== undefined && body.minPrice > body.maxPrice) {
+        errors.push({ field: "minPrice", message: "Minimum price cannot be greater than maximum price" });
+    }
+
+    if (errors.length > 0) {
+        throw ApiError.badRequest("Validation failed", errors);
+    }
+
+    next();
+};
+
+/**
+ * Validates the request body for updating a market price.
+ * Allows partial updates.
+ */
+const validateUpdateMarketPrice = (req, res, next) => {
+    const errors = [];
+    const body = req.body;
+
+    if (body.commodity !== undefined && (typeof body.commodity !== "string" || body.commodity.trim() === "")) {
+        errors.push({ field: "commodity", message: "Commodity name cannot be empty" });
+    }
+
+    if (body.market !== undefined && (typeof body.market !== "string" || body.market.trim() === "")) {
+        errors.push({ field: "market", message: "Market name cannot be empty" });
+    }
+
+    if (body.state !== undefined && (typeof body.state !== "string" || body.state.trim() === "")) {
+        errors.push({ field: "state", message: "State cannot be empty" });
+    }
+
+    const priceFields = ["minPrice", "maxPrice", "modalPrice"];
+    priceFields.forEach((field) => {
+        if (body[field] !== undefined && (isNaN(body[field]) || body[field] < 0)) {
+            errors.push({ field, message: `${field} must be a positive number` });
+        }
+    });
+
+    if (body.priceDate !== undefined && isNaN(new Date(body.priceDate).getTime())) {
+        errors.push({ field: "priceDate", message: "Price date must be a valid date" });
+    }
+
+    if (errors.length > 0) {
+        throw ApiError.badRequest("Validation failed", errors);
+    }
+
+    next();
+};
+
+/**
+ * Validates bulk create request for market prices.
+ */
+const validateBulkCreateMarketPrice = (req, res, next) => {
+    const { records } = req.body;
+
+    if (!records || !Array.isArray(records) || records.length === 0) {
+        throw ApiError.badRequest("'records' must be a non-empty array");
+    }
+
+    if (records.length > 500) {
+        throw ApiError.badRequest("Maximum 500 records allowed per bulk request");
+    }
+
+    const errors = [];
+    records.forEach((record, index) => {
+        if (!record.commodity) errors.push({ field: `records[${index}].commodity`, message: "Commodity is required" });
+        if (!record.market) errors.push({ field: `records[${index}].market`, message: "Market is required" });
+        if (!record.state) errors.push({ field: `records[${index}].state`, message: "State is required" });
+        if (record.minPrice === undefined) errors.push({ field: `records[${index}].minPrice`, message: "Min price is required" });
+        if (record.maxPrice === undefined) errors.push({ field: `records[${index}].maxPrice`, message: "Max price is required" });
+        if (record.modalPrice === undefined) errors.push({ field: `records[${index}].modalPrice`, message: "Modal price is required" });
+        if (!record.priceDate) errors.push({ field: `records[${index}].priceDate`, message: "Price date is required" });
+    });
+
+    if (errors.length > 0) {
+        throw ApiError.badRequest("Bulk validation failed", errors);
+    }
+
+    next();
+};
+
+export {
+    validateCreateCrop,
+    validateUpdateCrop,
+    validateIdParam,
+    validateCreateMarketPrice,
+    validateUpdateMarketPrice,
+    validateBulkCreateMarketPrice,
+};
