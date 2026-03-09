@@ -25,6 +25,12 @@ const env = {
     cors: {
         origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     },
+
+    govData: {
+        apiKey: process.env.GOV_DATA_API_KEY || "",
+        resourceId: process.env.GOV_DATA_RESOURCE_ID || "9ef84268-d588-465a-a308-a864a43d0070",
+        baseUrl: "https://api.data.gov.in/resource",
+    },
 };
 
 export default env;

@@ -6,6 +6,7 @@ import cropRoutes from "./crop.routes.js";
 import uploadRoutes from "./upload.routes.js";
 import authRoutes from "./auth.routes.js";
 import marketPriceRoutes from "./marketPrice.routes.js";
+import govDataRoutes from "./govData.routes.js";
 
 const router = Router();
 
@@ -13,5 +14,6 @@ router.use("/crops", cropRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/auth", authRoutes);
 router.use("/market-prices", marketPriceRoutes);
+router.use("/gov-data", govDataRoutes);
 
 export default router;
